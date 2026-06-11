@@ -1,0 +1,39 @@
+name: Code Quality Check
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pycodestyle
+        run: |
+          pip install pycodestyle
+
+      - name: Run pycodestyle
+        run: |
+          pycodestyle . > style_report.txt || true
+          cat style_report.txt
+
+      - name: Check File Length
+        run: |
+          python scripts/line_check.py
+
+      - name: Check Docstrings
+        run: |
+          python scripts/docstring_check.pyo
