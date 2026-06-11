@@ -15,4 +15,5 @@ def divide(a, b):
         raise ValueError("Cannot divide by zero")
     return a / b
 
+x=10
 # cache test
