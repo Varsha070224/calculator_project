@@ -1,0 +1,53 @@
+name: PR Review Bot
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate Review Report
+        run: |
+          chmod +x scripts/generate_review.sh
+          scripts/generate_review.sh
+
+      - name: Create or Update PR Comment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          COMMENT_BODY=$(cat review.md)
+
+          COMMENTS_URL="https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments"
+
+          EXISTING_ID=$(curl -s \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "$COMMENTS_URL" \
+            | jq '.[] | select(.body | contains("## Automated PR Review")) | .id' \
+            | head -n 1)
+
+          if [ -z "$EXISTING_ID" ]; then
+            curl -X POST \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "$COMMENTS_URL" \
+              -d "$(jq -n --arg body "$COMMENT_BODY" '{body:$body}')"
+          else
+            curl -X PATCH \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/comments/$EXISTING_ID" \
+              -d "$(jq -n --arg body "$COMMENT_BODY" '{body:$body}')"
+          fi
