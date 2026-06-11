@@ -1,8 +1,8 @@
 #!/bin/bash
 
-FILES_CHANGED=$(git diff --name-only origin/main...HEAD | wc -l)
+FILES_CHANGED=$(git diff --name-only HEAD~1 HEAD | wc -l)
 
-STATS=$(git diff --shortstat origin/main...HEAD)
+STATS=$(git diff --shortstat HEAD~1 HEAD)
 
 ADDED=$(echo "$STATS" | grep -o '[0-9]* insertion' | grep -o '[0-9]*')
 REMOVED=$(echo "$STATS" | grep -o '[0-9]* deletion' | grep -o '[0-9]*')
@@ -22,7 +22,7 @@ echo "" >> review.md
 
 FOUND=0
 
-for file in $(git diff --name-only origin/main...HEAD)
+for file in $(git diff --name-only HEAD~1 HEAD)
 do
   if [ -f "$file" ]; then
     RESULT=$(grep -nE "TODO|FIXME" "$file")
@@ -45,5 +45,5 @@ echo "" >> review.md
 echo "### Diff Statistics" >> review.md
 echo "" >> review.md
 echo '```' >> review.md
-git diff --stat origin/main...HEAD >> review.md
+git diff --stat HEAD~1 HEAD >> review.md
 echo '```' >> review.md
