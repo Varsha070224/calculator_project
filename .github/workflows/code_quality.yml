@@ -36,4 +36,4 @@ jobs:
 
       - name: Check Docstrings
         run: |
-          python scripts/docstring_check.pyo
+          python scripts/docstring_check.py
